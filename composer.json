@@ -1,0 +1,37 @@
+{
+    "name": "SoftCreatR/WeakAuras",
+    "description": "WeakAuras Decoder",
+    "license": "LGPL-3.0",
+    "keywords": ["WeakAuras", "World of Warcraft", "WoW", "SoftCreatR"],
+    "homepage": "https://www.softcreatr.de",
+    "authors": [
+        {
+            "name": "Sascha Greuel",
+            "email": "sascha@softcreatr.de"
+        },
+        {
+            "name": "Sebastian Zimmer",
+            "email": "morik@softcreatr.de"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/SoftCreatR/weakauras-decoder/issues",
+        "forum": "https://support.softcreatr.de",
+        "source": "https://github.com/SoftCreatR/weakauras-decoder"
+    },
+    "version": "1.0.0-beta1",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": ">=5.0.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "SoftCreatR": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "SoftCreatR\\Tests": "tests/"
+        }
+    }
+}

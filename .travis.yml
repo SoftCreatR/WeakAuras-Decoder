@@ -1,0 +1,22 @@
+language: php
+
+sudo: false
+
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
+
+before_install:
+  - export PATH="$PATH:$(composer global config bin-dir --absolute)"
+  - composer global require "squizlabs/php_codesniffer=3.*"
+  - phpenv rehash
+
+before_script:
+  - composer self-update
+  - composer install --prefer-source --no-interaction --dev
+
+script:
+  - phpunit
+  - phpcs -p --extensions=php --standard=PSR2 src
