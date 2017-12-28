@@ -1,4 +1,4 @@
-[![Travis](https://img.shields.io/travis/SoftCreatR/weakauras-decoder.svg?style=for-the-badge)](https://travis-ci.org/SoftCreatR/weakauras-decoder) [![Discord](https://img.shields.io/discord/350291929222873099.svg?style=for-the-badge&colorB=7289DA)](https://discord.gg/hS2yuQC)
+[![Travis](https://img.shields.io/travis/SoftCreatR/WeakAuras-Decoder.svg?style=for-the-badge)](https://travis-ci.org/SoftCreatR/WeakAuras-Decoder) [![Discord](https://img.shields.io/discord/350291929222873099.svg?style=for-the-badge&colorB=7289DA)](https://discord.gg/hS2yuQC)
 
 # WeakAuras Decoder
 

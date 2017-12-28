@@ -15,9 +15,9 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/SoftCreatR/weakauras-decoder/issues",
-        "forum": "https://support.softcreatr.de",
-        "source": "https://github.com/SoftCreatR/weakauras-decoder"
+		"source": "https://github.com/SoftCreatR/WeakAuras-Decoder",
+        "issues": "https://github.com/SoftCreatR/WeakAuras-Decoder/issues",
+        "forum": "https://support.softcreatr.de"
     },
     "version": "1.0.0-beta1",
     "require": {},
