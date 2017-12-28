@@ -19,7 +19,7 @@ The __WeakAuras Decoder__ is a PHP class that gives you the ability to convert t
 Require this package, with [Composer](https://getcomposer.org/), in the root directory of your project:
 
 ```bash
-$ composer require SoftCreatR/weakauras-decoder
+$ composer require softcreatr/weakauras-decoder
 ```
 
 ## Usage / Examples
