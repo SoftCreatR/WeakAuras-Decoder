@@ -20,18 +20,20 @@
         "forum": "https://support.softcreatr.de"
     },
     "version": "1.0.0",
-    "require": {},
+    "require": {
+        "php": ">=7.0"
+    },
     "require-dev": {
-        "phpunit/phpunit": ">=5.0.0"
+        "phpunit/phpunit": "^6.5"
     },
     "autoload": {
-        "psr-0": {
-            "SoftCreatR": "src/"
+        "psr-4": {
+            "SoftCreatR\\WeakAuras\\": "src/SoftCreatR/WeakAuras/"
         }
     },
     "autoload-dev": {
-        "psr-0": {
-            "SoftCreatR\\Tests": "tests/"
+        "psr-4": {
+            "SoftCreatR\\Tests\\WeakAuras\\": "tests/SoftCreatR/WeakAuras/"
         }
     }
 }
