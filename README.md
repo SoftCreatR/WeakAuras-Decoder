@@ -1,115 +1,62 @@
-[![Travis](https://img.shields.io/travis/SoftCreatR/WeakAuras-Decoder.svg?style=for-the-badge)](https://travis-ci.org/SoftCreatR/WeakAuras-Decoder) [![Discord](https://img.shields.io/discord/350291929222873099.svg?style=for-the-badge&colorB=7289DA)](https://discord.gg/hS2yuQC)
-
 # WeakAuras Decoder
 
-WeakAuras is a powerful and flexible framework for World Of Warcraft that allows you to display highly customizable graphics on your screen to indicate buffs, debuffs, and a whole host of similar types of information. It was originally meant to be a lightweight replacement for Power Auras, but it now incorporates many features that Power Auras does not, while still remaining more efficient and easy to use.
+A PHP library with no third-party requirements for reading and writing WeakAuras (1 & 2) import strings. It decodes the complete transmission envelope, including grouped children, custom Lua source, version metadata, and any other stored fields. The library only reads source strings; it never executes embedded Lua.
 
-Created auras can be exported and shared all over the net. But there's a catch: All you get is an encoded string, that is used to be imported in the WeakAuras addon. This encoded string could possibly contain custom code which may be supposed to destroy your gaming experience by stealing gold from your character, spamming other players, etc.
+Requires PHP 8.3–8.6 and the standard zlib extension. Install it with `composer require softcreatr/weakauras-decoder`.
 
-The __WeakAuras Decoder__ is a PHP class that gives you the ability to convert these strings back in a human readable format. It is mostly a port of WeakAuras' Lua code that does literally the same.
+## Formats
 
-## Requirements
+| Export prefix | Encoding | Compression | Serialization | Addon examples |
+| --- | --- | --- | --- | --- |
+| none | WeakAuras six-bit alphabet | LibCompress (uncompressed, LZW, or Huffman) | AceSerializer-3.0 | 1.4.7.9, 2.1.0.1, 2.5.1, 2.7.0 |
+| `!` | LibDeflate printable alphabet | raw Deflate | AceSerializer-3.0 | 2.8.0, 2.10.0 |
+| `!WA:2!` | LibDeflate printable alphabet | raw Deflate | LibSerialize | 3.0.0, 4.0.0, 5.0.0, 5.21.0 |
 
-- PHP 5.5 or newer
-- HTTP server with PHP support (eg: Apache, Nginx, Caddy)
-- [Composer](https://getcomposer.org)
+The number after `!WA:` is the export format version, not the addon version. The decoded envelope's `s` field contains the addon version and `v` contains its transmission schema version. The unprefixed codec also handles the tested WeakAuras 1.4.7.9 group. Unsupported future export versions produce an explicit exception.
 
-## Installation
+The format mapping follows [WeakAuras 2.5.1](https://github.com/WeakAuras/WeakAuras2/blob/2.5.1/WeakAuras/Transmission.lua), [2.8.0](https://github.com/WeakAuras/WeakAuras2/blob/2.8.0/WeakAuras/Transmission.lua), and [current Transmission.lua](https://github.com/WeakAuras/WeakAuras2/blob/main/WeakAuras/Transmission.lua). The old codec methods follow [LibCompress](https://github.com/OpenPrograms/LibCompress/blob/master/LibCompress.lua).
 
-Require this package, with [Composer](https://getcomposer.org/), in the root directory of your project:
-
-```bash
-$ composer require softcreatr/weakauras-decoder
-```
-
-## Usage / Examples
-
-#### decodeAura
-
-Decodes an encoded WeakAuras string into an array.
+## Decode and convert
 
 ```php
 <?php
-require "vendor/autoload.php";
+
+require 'vendor/autoload.php';
 
 use SoftCreatR\WeakAuras\Decoder;
 
-// Encoded WeakAuras string
-$encoded = 'd0JPcaGAjrTlPQETKQoTspMsnxvmBsomvDtPITPG(Mc8xPq7KuyVODtL9lj5NsLgMqzCsbxwvdvurdwsLHtQ6GcXPev4ykY5i' .
-           'LwOKqxxWIfvLLlYdfvXtjwgPYZLyIIQ0uHAYumDWIKsnkjbptH8ojr2Ou0xfQ2SIA7IsFwLMLOsnnPkFxkzKsknwrLmArX4LK' .
-           '6KskUfPORjKoVc1Hevv3Ms(nK5eXu8etGsHIU(r7prXIIHIHykMTOx5hJ)Qbk1(kfQQ6IJskt(P4THn7Jt79(PoiZtn0CkgfV' .
-           'nSixHykfWNaIPuqbNHsno4tZE7)eXy66kN4VV(iHKVC68M1FeuWzkN8GA1bHw3Tp6EPyqnwqbNH5JaL1TaXumOgTdfazXksXo' .
-           'uaKfLCQ8JfuWzAUQVcTRXbFA2B)NteJPRRCoXFF9rcjF5C68M1Fock4mLZjUh(uEti99r3B7C3wAMR25OseiqXSLkhC2WM9P4' .
-           'vkkRHsTVsHQQU4OKYqP1AGmSzdJInkAmTt6AyymTd0QJZA2BafiT37NiMsjdQvxhLsguRUUi2WM9jqXfSWP9E)uHAmrjZV3ma' .
-           'BoCq0OJ02BymT6MgeD0qoRzpTuuiVHykGx9oqhXuSckyjMabkGx9oGykwbfSetGafZopV2bfmMykwbfSetGaLK3(jMIvqblXe' .
-           'iqjHupXuSckyjMabk6ZQh8Q3betXkOGLyceOSUBcf0tmfRGcwIjqGYS3gwKJykwbfSetGabkP)UihES(Nc8vdeOKLAm1t3ebs' ;
+$export = trim(file_get_contents('aura.txt'));
+$envelope = Decoder::decode($export);
 
-// Perform decode
-$decoded = Decoder::decodeAura($encoded);
+echo $envelope['s'];                // WeakAuras addon version
+echo $envelope['d']['id'];          // Root display name
+$children = $envelope['c'] ?? [];  // Grouped displays, if present
 
-// Print the result
-var_dump($decoded[0]);
+$currentFormat = Decoder::convert($export); // !WA:2!...
 ```
 
-#### dumpLuaCode
+`Decoder::decodeAura($export)` remains available for older callers and returns `[$envelope]`. `Decoder::encode($envelope)` emits a `!WA:2!` string by default. To write an unprefixed WA1-era string, use `Decoder::encode($envelope, Decoder::FORMAT_LEGACY)` or `Decoder::convert($export, Decoder::FORMAT_LEGACY)`. `Decoder::FORMAT_ACE_DEFLATE` writes the intermediate `!` format. The legacy writer chooses LibCompress LZW or its uncompressed method; it does not yet write Huffman streams. `Decoder::dumpLuaCode($envelope, 'custom')` finds fields by name and returns their paths and values.
 
-Dumps custom Lua codes into an array.
+`convert()` changes the transport format while retaining the decoded aura fields. The AceSerializer-based legacy formats cannot represent cyclic/shared table references or integers beyond Lua's exact double range, so those conversions fail explicitly. It does not rewrite obsolete triggers, load conditions, or custom Lua to newer addon schemas. Whether a historic aura works in a current game client depends on WeakAuras' own import migration and the aura's content.
+
+## Lossless Lua tables
+
+PHP arrays cannot distinguish every Lua key type, and they cannot express a cyclic table graph. For exports containing those values, use `decodeLossless()` and inspect the returned `LuaTable` objects. Each table exposes `entries()` as ordered `[key, value]` pairs and `get('field')` for string keys. Shared table references retain object identity. You can pass the result directly to `encode()`.
 
 ```php
-<?php
-require "vendor/autoload.php";
-
-use SoftCreatR\WeakAuras\Decoder;
-
-// Encoded WeakAuras string
-$encoded = 'd0JPcaGAjrTlPQETKQoTspMsnxvmBsomvDtPITPG(Mc8xPq7KuyVODtL9lj5NsLgMqzCsbxwvdvurdwsLHtQ6GcXPev4ykY5i' .
-           'LwOKqxxWIfvLLlYdfvXtjwgPYZLyIIQ0uHAYumDWIKsnkjbptH8ojr2Ou0xfQ2SIA7IsFwLMLOsnnPkFxkzKsknwrLmArX4LK' .
-           '6KskUfPORjKoVc1Hevv3Ms(nK5eXu8etGsHIU(r7prXIIHIHykMTOx5hJ)Qbk1(kfQQ6IJskt(P4THn7Jt79(PoiZtn0CkgfV' .
-           'nSixHykfWNaIPuqbNHsno4tZE7)eXy66kN4VV(iHKVC68M1FeuWzkN8GA1bHw3Tp6EPyqnwqbNH5JaL1TaXumOgTdfazXksXo' .
-           'uaKfLCQ8JfuWzAUQVcTRXbFA2B)NteJPRRCoXFF9rcjF5C68M1Fock4mLZjUh(uEti99r3B7C3wAMR25OseiqXSLkhC2WM9P4' .
-           'vkkRHsTVsHQQU4OKYqP1AGmSzdJInkAmTt6AyymTd0QJZA2BafiT37NiMsjdQvxhLsguRUUi2WM9jqXfSWP9E)uHAmrjZV3ma' .
-           'BoCq0OJ02BymT6MgeD0qoRzpTuuiVHykGx9oqhXuSckyjMabkGx9oGykwbfSetGafZopV2bfmMykwbfSetGaLK3(jMIvqblXe' .
-           'iqjHupXuSckyjMabk6ZQh8Q3betXkOGLyceOSUBcf0tmfRGcwIjqGYS3gwKJykwbfSetGabkP)UihES(Nc8vdeOKLAm1t3ebs' ;
-
-// Perform decode
-$decoded = Decoder::decodeAura($encoded);
-$decoded = $decoded[0];
-
-// "Danger keys" are used to identify custom code
-$dangerKeys = [
-    'custom', 'customDuration', 'customName',
-    'customIcon', 'customTexture', 'customStacks',
-    'translateFunc', 'alphaFunc', 'scaleFunc',
-    'rotateFunc', 'colorFunc', 'customText'
-];
-
-// Perform some magic
-$luaCodes = [];
-
-foreach ($dangerKeys as $k) {
-    $customizations = Decoder::dumpLuaCode($decoded, $k);
-
-    foreach ($customizations as $customization) {
-        $customization['value'] = trim($customization['value']);
-
-        if (!empty($customization['value'])) {
-            $luaCodes[] = $customization;
-        }
-    }
-}
-
-// Print the result
-echo "Decoded string:\n\n";
-var_dump($decoded);
-
-echo "\n\nCustom code (if there is any):\n\n";
-var_dump($luaCodes);
+$table = Decoder::decodeLossless($export);
+$display = $table->get('d');
+$roundTrip = Decoder::encode($table);
 ```
 
-License
-----
+`decode()` returns ordinary PHP arrays for normal aura data. It throws with a suggestion to use `decodeLossless()` if a key, cycle, or shared table reference would lose information during conversion.
 
-[![license](https://img.shields.io/github/license/SoftCreatR/weakauras-decoder.svg?style=for-the-badge)](https://github.com/SoftCreatR/weakauras-decoder/blob/master/LICENSE)
+## Development
 
+Run `composer install`, then `vendor/bin/phpunit`. The suite includes a [WeakAuras 1.4.7.9 thirteen-child group](https://pastebin.com/iM8DKdPk), a [2.1.0.1 nine-child group](https://pastebin.com/c19FZ6VY), the original 2.5.1 export and its supplied `!WA:2!` counterpart, and a [5.21.0 five-child group](https://wago.io/n7l5uN3YM). The corresponding fixtures are in `tests/fixtures/`. Run `php-cs-fixer fix --config=.php-cs-fixer.dist.php` to apply the repository's style rules.
 
-**Free Software, Hell Yeah!**
+The tests verify PHP decoding and data-preserving re-encoding. They do not install an aura into World of Warcraft or exercise WeakAuras' in-game migration code.
+
+## License
+
+The library code is licensed under the [ISC License](LICENSE). The third-party WeakAuras export fixtures are test data from their linked sources above; their creators retain their rights, and the library's ISC grant does not apply to those strings.
